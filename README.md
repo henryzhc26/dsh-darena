@@ -12,7 +12,7 @@
 ## 安装
 
 ```bash
-dsh plugin add https://github.com/henryzhc26/dsh-darena/releases/download/v0.1.6/dsh-darena-0.1.6.tgz
+dsh plugin add https://github.com/henryzhc26/dsh-darena/releases/download/v0.1.9/dsh-darena-0.1.9.tgz
 ```
 
 或用仓库直接装：
