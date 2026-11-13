@@ -1,0 +1,61 @@
+{
+  "name": "dsh-darena",
+  "version": "0.1.6",
+  "description": "D宠大乐斗：实时匹配真人对战的小游戏（11 档难度、三局两胜、排行榜），附带可关的前台形象挂件",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "arena/",
+    "desktop-pet/",
+    "!**/*.bak*",
+    "!**/.DS_Store",
+    "!arena/dev/",
+    "!arena/public/assets/avatars-real/refs/",
+    "!arena/public/assets/avatars-real/compare/"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  },
+  "scripts": {
+    "check": "node --check index.js && node --check client.js && node --check desktop-pet/index.js && node --check arena/index.js && node --check arena/server/core2.cjs && node --check arena/server/pet-llm.cjs && node --check arena/server/arena-room.js",
+    "load": "node -e \"import('./index.js').then(m => console.log('loaded', m.name, m.inject.length, 'injects')).catch(e => { console.error(e); process.exit(1) })\"",
+    "install:local": "rsync -a --delete --exclude '.bak*' ./ \"$HOME/.dsh/plugins/dsh-darena/\""
+  },
+  "license": "MIT",
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "game",
+    "pvp",
+    "arena",
+    "realtime"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henryzhc26/dsh-darena.git"
+  },
+  "homepage": "https://github.com/henryzhc26/dsh-darena",
+  "bugs": {
+    "url": "https://github.com/henryzhc26/dsh-darena/issues"
+  },
+  "author": "Henry Chen"
+}

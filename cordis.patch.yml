@@ -1,0 +1,5 @@
+# dsh-darena bundle patch：只挂「D宠大乐斗」。
+# 与 dsh-ai-office 相互独立，可单独安装/卸载。
+- insert:
+    - id: darena
+      name: dsh-darena

@@ -1,0 +1,7 @@
+# dsh-pet-arena bundle patch.
+#
+# 装在 profile 的 dsh.profile.bundles 里时，加载器会用这一条 insert 挂载插件。
+# 不要在 profile 的 cordis.patch.yml 里再写一条同 id 的 insert（会挂两次）。
+- insert:
+    - id: pet-arena
+      name: dsh-pet-arena
