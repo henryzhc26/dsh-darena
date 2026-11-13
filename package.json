@@ -1,6 +1,6 @@
 {
   "name": "dsh-darena",
-  "version": "0.1.9",
+  "version": "0.1.12",
   "description": "D宠大乐斗：实时匹配真人对战的小游戏（11 档难度、三局两胜、排行榜），附带可关的前台形象挂件",
   "type": "module",
   "main": "index.js",
