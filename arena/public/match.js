@@ -392,7 +392,7 @@
       oppScore = w.S;
     }
 
-    // 播放：自己的宠物走一遍（练习房两边都走）
+    // 播放：自己的形象走一遍（练习房两边都走）
     var myParsed = C2.parseSubmission(mineCall ? mineCall.text : '');
     var mySim = C2.simulate(spec, myParsed.plan);
     B.$('mv' + myLane).textContent = mySim.used; B.$('bad' + myLane).textContent = mySim.invalid;

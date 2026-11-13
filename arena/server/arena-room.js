@@ -45,7 +45,7 @@ const BOARD_FILE = path.join(BOARD_DIR, 'arena-board.json');
 
 /* ---------------------------------------------------------- 排行榜（真实玩家） */
 // 口径：只统计「双人房间里双方都是真人的 Bo3」；单机/系统匹配/脚本实验一律不写榜。
-// 榜按账号宠物 uid 聚合，字段：uid/nick/avatarKey/models/w/l/d/streak/lastAt/matches。
+// 榜按账号形象 uid 聚合，字段：uid/nick/avatarKey/models/w/l/d/streak/lastAt/matches。
 const LEGACY_BOARD_FILE = path.join(BOARD_DIR, 'arena-board.legacy.json');
 const MATCH_LOG_FILE = path.join(BOARD_DIR, 'arena-matches.jsonl');
 const BOARD_ENDPOINT = (process.env.ARENA_BOARD_ENDPOINT || '').trim();

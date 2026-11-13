@@ -1,6 +1,6 @@
-# DS 宠物 · 比武台（dsh-pet-arena）
+# D宠大乐斗（dsh-darena）
 
-两只宠物，各调用一个**真实的 AI 模型**，在同一张机关房里比谁先到终点。
+两个形象，各调用一个**真实的 AI 模型**，在同一张机关房里比谁先到终点。
 
 - 不是随机数打架：胜负来自「答得对不对、走得快不快」。同一个 seed 生成同一张地图，双方各调一次模型，输出一行路线，判定全部在本地纯函数里复算。
 - 免费可用：DSH 自带的 DeepSeek V4.1 Flash。你接了别的模型（Claude / Gemini / 任何 OpenAI 兼容接口），就能用你自己那把 key，按你自己的额度计费。
@@ -29,11 +29,11 @@ key 只落本机文件（`~/.dsh/bot/pet-hub/`），网页与日志里只出现�
 
 ## 在哪打开
 
-侧栏一行「DS 宠物 · 比武台」。面板里就是游戏页（`/pet-arena/`）。
+侧栏一行「D宠大乐斗」。面板里就是游戏页（`/pet-arena/`）。
 
 ## 数据落盘
 
-- 宠物档案：`~/.dsh/bot/pet-hub/pets.json`
+- 形象档案：`~/.dsh/bot/pet-hub/pets.json`
 - 排行榜：`~/.dsh/bot/pet-hub/arena-board.json`
 - 手动添加的模型：`~/.dsh/bot/pet-hub/extra-models.json` + `extra-keys/`
 
@@ -42,7 +42,7 @@ key 只落本机文件（`~/.dsh/bot/pet-hub/`），网页与日志里只出现�
 ```
 index.js            host：/pet-arena 静态页 + /pet-arena/api/* 接口
 client.js           侧栏面板（iframe 到 /pet-arena/）
-server/pet-llm.cjs  模型目录、真调用、排行榜、宠物档案
+server/pet-llm.cjs  模型目录、真调用、排行榜、形象档案
 public/             游戏页（index.html / core.js / assets）
 cordis.patch.yml    bundle patch
 ```

@@ -3,7 +3,7 @@
  *
  * 一个纯小游戏插件，两件事：
  *   1) 侧栏「D宠大乐斗」面板 —— 占满高度的对局页（实时匹配、三局两胜、11 档、排行榜）
- *   2) 客户端前台形象挂件（默认开、可关）—— 把账号绑定宠物显示在右下角
+ *   2) 客户端前台形象挂件（默认开、可关）—— 把账号绑定形象显示在右下角
  * 不 import AI 办公室，也不依赖任何邻目录；共享小工具自带一份。
  */
 
@@ -51,8 +51,8 @@ window.__ModuleLoader__.load({
 
     /**
      * 面板内容＝一个占满高度的大乐斗 iframe。
-     * 形象不在这里选：账号已绑定就用账号那只（页面自己读 /api/pet-profile）；
-     * 真没宠物时页面会引导领养一次，之后永不重复问。
+     * 形象不在这里选：账号已绑定就用账号那个（页面自己读 /api/pet-profile）；
+     * 真没形象时页面会引导领养一次，之后永不重复问。
      */
     function GamePage() {
       const [src, setSrc] = React.useState('')
@@ -74,7 +74,27 @@ window.__ModuleLoader__.load({
         return () => { alive = false }
       }, [])
 
-      return h('div', { className: 'da-page' },
+      // 面板可见时收起桌面形象挂件，别让照片压在内容上；切走/关掉面板就恢复。
+      // 用 IntersectionObserver 而不是 mount/unmount：DSH 会保留面板实例，只是隐藏。
+      const pageRef = React.useRef(null)
+      React.useEffect(() => {
+        const node = pageRef.current
+        if (!node || typeof IntersectionObserver !== 'function') {
+          window.__darenaPanelOpen = true
+          return () => { window.__darenaPanelOpen = false }
+        }
+        const io = new IntersectionObserver((entries) => {
+          const entry = entries[entries.length - 1]
+          window.__darenaPanelOpen = !!(entry && entry.isIntersecting)
+        }, { threshold: 0.15 })
+        io.observe(node)
+        return () => {
+          io.disconnect()
+          window.__darenaPanelOpen = false
+        }
+      }, [])
+
+      return h('div', { className: 'da-page', ref: pageRef },
         note ? h('div', { className: 'da-note', role: 'status' }, note) : null,
         src ? h('iframe', {
           className: 'da-frame',
@@ -135,12 +155,12 @@ window.__ModuleLoader__.load({
       eyesClosed: 'pet-head-eyes-closed-v8.png',
     }
 
-    /* ── 桌宠形象：跟着网页里「我领的那只宠物」走 ──────────────────────
+    /* ── 桌宠形象：跟着网页里「我领的那个形象」走 ──────────────────────
      * demo/index.html 把 {nick, avatarKey, status} 存在 127.0.0.1:8917 这个源
      * 的 localStorage（键 bo-my-pet::<uid>）。插件跑在 DSH 自己的源上，读不到
      * 别人的 localStorage，所以用一个 1×1 隐藏 iframe 去问一句：桥页
      * demo/pet-bridge.html 只做「读 localStorage → postMessage 回话」，不联网。
-     * 取值顺序：本地记住的 dsh.pet.avatar → 网页里那只 → whale。 */
+     * 取值顺序：本地记住的 dsh.pet.avatar → 网页里那个 → whale。 */
     const PET_BRIDGE = 'http://127.0.0.1:8917/pet-bridge.html'
     const PET_ARENA = 'http://127.0.0.1:8917/arena2/index.html'
     const PET_UID_KEY = 'dsh.pet.uid'
@@ -179,7 +199,7 @@ window.__ModuleLoader__.load({
     const BUBBLE_MS = 3400
 
     /** 闲置多久睡着 / 小动作间隔。 */
-    const SLEEP_AFTER_MS = 20 * 60 * 1000 // 20 分钟没人理才打盹：太短会让桌面宠物整天闭着眼像没在干活
+    const SLEEP_AFTER_MS = 20 * 60 * 1000 // 20 分钟没人理才打盹：太短会让桌面形象整天闭着眼像没在干活
     const ACTION_MIN_MS = 8000
     const ACTION_MAX_MS = 20000
 
@@ -320,7 +340,7 @@ window.__ModuleLoader__.load({
     /**
      * 真·食物实体：嘴上真的叼着一个鸡腿/饭团/汉堡（Q 版插画，透明 PNG），
      * 随咀嚼抖，最后 FOOD_GULP_MS 缩到 0（＝咽下去），与 EAT_MS 同时收 DOM。
-     * 素材按 4× 存（160px 宽 → 显示 40px），与宠物图 440×840 → 110×210 同一倍率。
+     * 素材按 4× 存（160px 宽 → 显示 40px），与形象图 440×840 → 110×210 同一倍率。
      * left/top 是 110×210 坐标系里的显示位置（嘴边靠前一点），w/h 是显示尺寸。
      */
     const FOOD_GULP_MS = 300
@@ -439,7 +459,7 @@ window.__ModuleLoader__.load({
 }
 #${LAYER_ID} .pet-art img.is-on { opacity: 1; }
 /* 网页里的 avatar 是 256×256 方图，在 110×210 的框里 object-fit contain 只有 110 高，
-   放大到 ~156px 才像一只站在桌上的宠物（贴地不贴顶）。 */
+   放大到 ~156px 才像一个站在桌上的形象（贴地不贴顶）。 */
 #${LAYER_ID} .pet-root.is-avatar .pet-art img.pet-img {
   /* avatar 是 256×256 方图，contain 在 110×210 的框里本来就占满高度，
      只需一点点放大并贴住框底（脚踩在影子上），不要放太大把人顶出框。 */
@@ -515,7 +535,7 @@ window.__ModuleLoader__.load({
   left: 50%;
   bottom: calc(100% - 2px);
   transform: translate(calc(-50% + var(--bub-dx, 0px)), calc(var(--bub-dy, 0px) + 6px));
-  /* 允许换行后不能再让绝对定位按 110px 的宠物容器收缩（会变成一条竖线），
+  /* 允许换行后不能再让绝对定位按 110px 的形象容器收缩（会变成一条竖线），
      先取 max-content 再用 max-width 折行 */
   width: max-content;
   max-width: 200px;
@@ -536,7 +556,7 @@ window.__ModuleLoader__.load({
   opacity: 1;
   transform: translate(calc(-50% + var(--bub-dx, 0px)), var(--bub-dy, 0px));
 }
-/* 宠物贴顶、气泡上方放不下时，翻到宠物脚下（箭头也翻到顶边） */
+/* 形象贴顶、气泡上方放不下时，翻到形象脚下（箭头也翻到顶边） */
 #${LAYER_ID} .pet-bubble.is-below {
   bottom: auto;
   top: calc(100% - 2px);
@@ -1284,7 +1304,7 @@ window.__ModuleLoader__.load({
 }
 
 /* —— 真·屎实体：放屁尾段从臀部落下 → 落地压扁 → 弹一下 → 停留 2–3s → 淡出 ——
-   插在 .pet-rig 之前：宠物身体压在它上面，看着像从背后掉出来，且永远在脸以下。 */
+   插在 .pet-rig 之前：形象身体压在它上面，看着像从背后掉出来，且永远在脸以下。 */
 #${LAYER_ID} .pet-poop {
   position: absolute;
   inset: 0;
@@ -1548,7 +1568,7 @@ window.__ModuleLoader__.load({
       root.className = 'pet-root'
       root.setAttribute('role', 'button')
       root.setAttribute('tabindex', '0')
-      root.setAttribute('aria-label', '桌面宠物：单击卖萌，右键有菜单')
+      root.setAttribute('aria-label', '桌面形象：单击卖萌，右键有菜单')
 
       const rig = document.createElement('div')
       rig.className = 'pet-rig'
@@ -1592,7 +1612,7 @@ window.__ModuleLoader__.load({
       art.append(imgBody, imgLid, blush)
       look.append(art)
 
-      /* —— 形象（现在跟网页里那只宠物走，不再写死真人照片） —— */
+      /* —— 形象（现在跟网页里那个形象走，不再写死真人照片） —— */
       let avatarKey = ''
       let petNick = ''
 
@@ -1636,7 +1656,7 @@ window.__ModuleLoader__.load({
         imgLid.style.display = 'none'
         root.classList.add('is-avatar')
         root.setAttribute('aria-label',
-          `桌面宠物：${petNick || '我的宠物'}（单击去比武台，右键有菜单）`)
+          `桌面形象：${petNick || '我的形象'}（单击去比武台，右键有菜单）`)
         return true
       }
 
@@ -1648,7 +1668,7 @@ window.__ModuleLoader__.load({
         imgLid.style.display = ''
         root.classList.remove('is-avatar')
         root.setAttribute('aria-label',
-          `桌面宠物：${nick || '我的宠物'}（单击去比武台，右键有菜单）`)
+          `桌面形象：${nick || '我的形象'}（单击去比武台，右键有菜单）`)
         try { window.localStorage.removeItem(PET_AVATAR_KEY) } catch { /* 忽略 */ }
         return true
       }
@@ -1665,7 +1685,7 @@ window.__ModuleLoader__.load({
         imgLid.style.display = 'none'
         root.classList.add('is-avatar')
         root.setAttribute('aria-label',
-          `桌面宠物：${petNick || AVATARS[key]}（单击去比武台，右键有菜单）`)
+          `桌面形象：${petNick || AVATARS[key]}（单击去比武台，右键有菜单）`)
         try {
           window.localStorage.setItem(PET_AVATAR_KEY, key)
         } catch {
@@ -1723,7 +1743,7 @@ window.__ModuleLoader__.load({
         window.setTimeout(giveUp, 2500)
       }
 
-      /** 问一句网页：你那只宠物是谁？拿到就换形象，拿不到保持 whale。 */
+      /** 问一句网页：你那个形象是谁？拿到就换形象，拿不到保持 whale。 */
       function askPageForPet() {
         let done = false
         const onAnswer = (event) => {
@@ -1756,7 +1776,7 @@ window.__ModuleLoader__.load({
         })
         window.addEventListener('message', onAnswer)
         document.body.append(frame)
-        // 桥页 3 秒还不回话（服务没开 / 被 CSP 挡）就收掉，一点不影响宠物本体
+        // 桥页 3 秒还不回话（服务没开 / 被 CSP 挡）就收掉，一点不影响形象本体
         window.setTimeout(() => {
           if (!done) {
             window.removeEventListener('message', onAnswer)
@@ -1831,7 +1851,7 @@ window.__ModuleLoader__.load({
       let imageBroken = false
       imgBody.addEventListener('error', () => {
         imageBroken = true
-        say('宠物图没加载出来，重启一下 DSH 试试', 5200)
+        say('形象图没加载出来，重启一下 DSH 试试', 5200)
       })
 
       // 视线跟随的状态要先声明：applyPosition() 会清缓存（TDZ）。
@@ -1854,7 +1874,7 @@ window.__ModuleLoader__.load({
 
       // —— 气泡 ——
       let bubbleTimer = 0
-      // 气泡贴着窗口边缘时会被裁掉：横向平移回来；纵向优先翻到宠物脚下，
+      // 气泡贴着窗口边缘时会被裁掉：横向平移回来；纵向优先翻到形象脚下，
       // 两边都放不下时用 --bub-dy 把气泡整体压回视口内（垂直 clamp）。
       function fitBubble() {
         const pad = 8
@@ -2003,7 +2023,7 @@ window.__ModuleLoader__.load({
        */
       /** 清掉 reduced 降级时写在 rig/look 上的内联姿势与 animation:none。
        *  这套内联会压过 class 动画；切回 no-preference 或喂食链结束时不清，
-       *  宠物会一直保持压扁且所有动作动画被抑制（验收 BUG-1）。 */
+       *  形象会一直保持压扁且所有动作动画被抑制（验收 BUG-1）。 */
       function clearPoseInline() {
         rig.style.animation = ''
         rig.style.transform = ''
@@ -2126,7 +2146,7 @@ window.__ModuleLoader__.load({
         img.draggable = false
         img.decoding = 'async'
         img.src = assetUrl(item.file)
-        // 单张食物素材挂了只收掉这一口，不能把整只宠物判成 imageBroken
+        // 单张食物素材挂了只收掉这一口，不能把整个形象判成 imageBroken
         img.addEventListener('error', () => {
           if (foodEl === el) removeFood()
         })
@@ -2155,7 +2175,7 @@ window.__ModuleLoader__.load({
       /**
        * 真·屎实体：气团散去的尾段，从臀部落下 → 落地压扁 → 弹一下 → 停留 2–3s → 淡出。
        * - 坐标在 110×210 里（臀部外侧、y > 176），永远在脸以下，也永远不出 root
-       * - 插在 rig 之前：宠物身体压在上面，看着像从背后掉出来的
+       * - 插在 rig 之前：形象身体压在上面，看着像从背后掉出来的
        * - 三个计时器独立管，stopFeeding / stopExtras 一次收干净
        */
       function removePoop() {
@@ -2222,7 +2242,7 @@ window.__ModuleLoader__.load({
 
       /**
        * 调试/自测用：把食物或屎实体的状态摊平——在不在 DOM、哪张素材、占多大一块、
-       * 相对宠物盒子有没有出界（脸在 y≈45–95，屎必须落在下面）、当前不透明度。
+       * 相对形象盒子有没有出界（脸在 y≈45–95，屎必须落在下面）、当前不透明度。
        */
       function describeEntity(el) {
         if (el === null || !el.isConnected) return { on: false, box: null, opacity: 0 }
@@ -2986,7 +3006,7 @@ window.__ModuleLoader__.load({
         // 拖起来就停掉走路/举牌/跺脚/坐下，松手后由 scheduleAction 自然恢复
         stopExtras()
         look.style.transform = ''
-        // 拖出宠物范围也要跟手：move/up 挂在 window 上，不依赖 pointer capture。
+        // 拖出形象范围也要跟手：move/up 挂在 window 上，不依赖 pointer capture。
         window.addEventListener('pointermove', onPointerMove)
         window.addEventListener('pointerup', onPointerUp)
         window.addEventListener('pointercancel', onPointerCancel)
@@ -3048,7 +3068,7 @@ window.__ModuleLoader__.load({
         if (wasClick) {
           cheer()
           say(pick(CLICK_LINES), 2200)
-          // 单击 = 带着这只宠物去比武台（新窗口，别把 DSH 自己导航走）
+          // 单击 = 带着这只形象去比武台（新窗口，别把 DSH 自己导航走）
           openArena()
         }
       }
@@ -3549,13 +3569,13 @@ window.__ModuleLoader__.load({
             say(`换成 ${AVATARS[next]} 啦`, 2000)
             burst('sparkle', 6)
           }],
-          ['🐾 跟随网页里那只宠物', () => {
+          ['🐾 跟随网页里那个形象', () => {
             try {
               window.localStorage.removeItem(PET_AVATAR_MANUAL)
             } catch {
               // 忽略
             }
-            say('好，跟着网页那只走', 2000)
+            say('好，跟着网页那个走', 2000)
             askPageForPet()
           }],
           ['🔍 内部群巡查（发给「宇诚总管」）', () => {
@@ -3574,19 +3594,19 @@ window.__ModuleLoader__.load({
           ['让它动一下', () => {
             if (!playAction()) say('它现在不想动…')
           }],
-          [desktopEnabled() ? '🖥️ 在桌面显示宠物：开（点此关闭）' : '🖥️ 在桌面显示宠物：关（点此打开）', () => {
+          [desktopEnabled() ? '🖥️ 在桌面显示形象：开（点此关闭）' : '🖥️ 在桌面显示形象：关（点此打开）', () => {
             const on = desktopEnabled()
             setDesktopEnabled(!on)
             if (on) {
-              say('桌面宠物关掉了，对战照常在面板里', 2600)
+              say('桌面形象关掉了，对战照常在面板里', 2600)
               window.setTimeout(() => { closeMenu(); hide() }, 60)
             } else {
-              say('桌面宠物回来啦', 2000)
+              say('桌面形象回来啦', 2000)
               window.setTimeout(() => window.location.reload(), 400)
             }
           }],
           ['重新加载', () => window.location.reload()],
-          ['隐藏宠物（本会话）', () => {
+          ['隐藏形象（本会话）', () => {
             hide()
             say('藏好了，⌘⇧P 能叫回来', 2600)
           }],
@@ -3656,7 +3676,7 @@ window.__ModuleLoader__.load({
       }
       const onDocumentKeyDown = (event) => {
         if (event.key === 'Escape') closeMenu()
-        // ⌘⇧P / Ctrl⇧P：把藏起来的宠物叫回来
+        // ⌘⇧P / Ctrl⇧P：把藏起来的形象叫回来
         if ((event.metaKey || event.ctrlKey) && event.shiftKey && (event.key === 'p' || event.key === 'P')) {
           event.preventDefault()
           if (hidden) show()
@@ -3707,7 +3727,7 @@ window.__ModuleLoader__.load({
       window.addEventListener('scroll', onScroll, true)
       window.addEventListener('pointermove', onGlobalPointerMove, { passive: true })
       reducedQuery?.addEventListener?.('change', onReducedMotionChange)
-      // 切换回来一眼看到的是闭着眼的宠物最出戏：页面重新可见时先叫醒它。
+      // 切换回来一眼看到的是闭着眼的形象最出戏：页面重新可见时先叫醒它。
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) wake()
       })
@@ -3728,7 +3748,7 @@ window.__ModuleLoader__.load({
             root.classList.remove('is-hungry', 'is-jumping', 'is-yawn')
             acting = false
           },
-          // 只给测试用：把宠物摆到指定坐标（真实交互里只有拖动会改位置）
+          // 只给测试用：把形象摆到指定坐标（真实交互里只有拖动会改位置）
           place: (left, top) => {
             position = { left, top: top ?? position.top }
             applyPosition()
@@ -4003,7 +4023,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /** ctx.get 是可选的取用方式：服务不在时返回 null，宠物照样显示。 */
+    /** ctx.get 是可选的取用方式：服务不在时返回 null，形象照样显示。 */
     function getWorkspaceService(ctx) {
       let fallback = null
       for (const key of ['uiWorkspace', 'workspace']) {
@@ -4026,7 +4046,8 @@ window.__ModuleLoader__.load({
         ctx.effect(() => {
           let dispose = null
           const sync = () => {
-            if (desktopEnabled()) {
+            const want = desktopEnabled() && window.__darenaPanelOpen !== true
+            if (want) {
               if (dispose === null) dispose = mount(ctx)
             } else if (dispose !== null) {
               dispose()
@@ -4039,7 +4060,7 @@ window.__ModuleLoader__.load({
             window.clearInterval(timer)
             if (dispose !== null) dispose()
           }
-        }, 'desktop-pet: 右下角宠物浮层（可在菜单里关闭桌面展示）')
+        }, 'desktop-pet: 右下角形象浮层（可在菜单里关闭桌面展示）')
       },
     }
     }

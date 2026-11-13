@@ -126,7 +126,7 @@
     if (!M.uid && B.identity) {
       try { var id = await B.identity(); if (id && id.uid) M.uid = id.uid; } catch (e) { /* ignore */ }
     }
-    if (!M.uid) { show('<div class="kick">实时匹配</div><h2>没有账号身份</h2><div class="sub">先去广场领一只宠物再来匹配。</div><div class="btnrow"><button id="mmClose" class="ghost">关闭</button></div>'); bindClose(); return; }
+    if (!M.uid) { show('<div class="kick">实时匹配</div><h2>没有账号身份</h2><div class="sub">先去创建你的形象再来匹配。</div><div class="btnrow"><button id="mmClose" class="ghost">关闭</button></div>'); bindClose(); return; }
     M.nick = B.petName() || 'DSH 玩家';
     M.avatarKey = B.petKey() || 'girl';
     M.model = (B.$('modelA') && B.$('modelA').value) || 'deepseek-flash';

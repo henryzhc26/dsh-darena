@@ -4,7 +4,7 @@
  * 一个 npm 包只做一个小游戏插件，两条静态/接口前缀都在包内：
  *   /pet-arena/（游戏页 public/）、/pet-arena/api/*（server/pet-llm.cjs）
  *   /desktop-pet/assets/*（前台形象挂件的贴图）
- *   /ds-pet/api/*（挂件读账号宠物形象，键与合集版一致）
+ *   /ds-pet/api/*（挂件读账号形象，键与合集版一致）
  * 不 import AI 办公室，也不依赖任何邻目录。
  */
 
@@ -25,7 +25,7 @@ export const inject = Array.from(new Set([
 const AVATAR_DIR = join(homedir(), '.dsh', 'bot', 'pet-hub', 'avatars')
 const MIME = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' }
 
-/** 宠物形象：桌宠在 DSH 源、图存在另一个源，所以统一从本机 pet-hub 取。 */
+/** 形象：桌宠在 DSH 源、图存在另一个源，所以统一从本机 pet-hub 取。 */
 async function serveMyPet(ctx, req, res) {
   try {
     const idRes = await fetch('http://127.0.0.1:8925/api/identity')

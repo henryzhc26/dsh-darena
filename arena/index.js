@@ -3,7 +3,7 @@
  *
  * 一个面板 + 一套本地接口：
  *   GET  /pet-arena/                  游戏页（public/index.html）
- *   GET  /pet-arena/assets/*          宠物贴图
+ *   GET  /pet-arena/assets/*          形象贴图
  *   *    /pet-arena/api/*             模型目录、真调用、排行榜（server/pet-llm.js）
  *
  * 所有路由都过连接层鉴权（ctx.connection.requestRejection），本机以外的请求拿不到数据。
@@ -63,7 +63,7 @@ function denied(ctx, req, res, url) {
   try { rejection = ctx.connection?.requestRejection?.(req) } catch { rejection = 401 }
   if (rejection === undefined || rejection === null) return false
   // 面板里的 iframe 拿不到 DSH 的浏览器会话 cookie（跨进程/被连接层判 401、403），
-  // 所以再认宠物服务自己签的令牌：父页面从 /api/identity 拿到 uid.token，
+  // 所以再认形象服务自己签的令牌：父页面从 /api/identity 拿到 uid.token，
   // 通过 iframe query 或 x-arena-token 头带过来。令牌 12 小时有效、只签本机主账号。
   const token = arenaTokenOf(req, url)
   if (token && petLlm.verifyArenaToken(token)) return false
@@ -106,7 +106,7 @@ async function apiHandler(ctx, req, res) {
   // 会把插件面板里的请求判成访客。这里给 pet-llm 一个明确标记，身份按主账号算。
   req.dshAuthorized = true
   const url = requestUrl
-  // /pet-arena/api/xxx → /api/xxx，直接复用宠物模型与排行榜那套实现
+  // /pet-arena/api/xxx → /api/xxx，直接复用形象模型与排行榜那套实现
   url.pathname = url.pathname.slice(ROOT.length)
 
   // 宿主自己的模型通道（用户 DSH 里能选的模型），拿不到就让前端退回直连
